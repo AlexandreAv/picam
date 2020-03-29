@@ -1,7 +1,19 @@
 import tensorflow as tf
 from math import ceil
 import cv2
+import pdb
 
+
+
+from tensorflow.compat.v1 import ConfigProto
+from tensorflow.compat.v1 import InteractiveSession
+
+config = ConfigProto()
+config.inter_op_parallelism_threads = 8
+config.intra_op_parallelism_threads = 8
+# tf.compat.v1.keras.backend.set_session(tf.compat.v1.Session(config=config))
+config.gpu_options.allow_growth = True
+session = InteractiveSession(config=config)
 
 class SSDDetectors:
 	"""
@@ -54,11 +66,12 @@ class SSDDetectors:
 			img = batch_img[i_1]
 			img_w, img_h, _ = img.shape
 			predictions = batch_preds[i_1]
-			score = predictions[0]
-			class_id = predictions[1]
-			bbox = predictions[2]
+			score = predictions[1]
+			class_id = predictions[2]
+			bbox = predictions[0]
 
 			for i_2 in range(len(score)):  # ymin, xmin, ymax, xmax = box
+				# pdb.set_trace()
 				coord_min = (int(bbox[i_2][3] * img_w), int(bbox[i_2][2] * img_h))
 				coord_max = (int(bbox[i_2][1] * img_w), int(bbox[i_2][0] * img_h))
 				org = (coord_max[0] + 10, coord_max[1] + 20)
