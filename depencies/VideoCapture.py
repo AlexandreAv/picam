@@ -1,12 +1,14 @@
 import cv2
 from time import time
 
-class VideoCapture(object):
-	def __init__(self, num_cam, time_of_cap, display):
+
+class VideoCapture:
+	def __init__(self, num_cam=0, time_of_cap=True, display=True, size=None):
 		self.cap = None
 		self.num_cam = num_cam
 		self.time_of_cap = time_of_cap
 		self.display = display
+		self.size = size
 		self.t0 = 0
 		self.t_fps = 0
 		self.fps = 0
@@ -45,6 +47,10 @@ class VideoCapture(object):
 
 	def __enter__(self):
 		self.cap = cv2.VideoCapture(self.num_cam)
+		if not self.size:
+			self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.size[0])
+			self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.size[1])
+
 		self.t0 = time()
 		return self
 
