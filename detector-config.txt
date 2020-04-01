@@ -4,4 +4,4 @@ label_path=picam/label/label.txt
 inputs_size=640
 outputs_size=640
 display=False
-default-time=10 # en seconde
+default-time=30   # en seconde
