@@ -9,8 +9,8 @@ from tensorflow.compat.v1 import ConfigProto
 from tensorflow.compat.v1 import InteractiveSession
 
 config = ConfigProto()
-config.inter_op_parallelism_threads = 8
-config.intra_op_parallelism_threads = 8
+config.inter_op_parallelism_threads = 4
+config.intra_op_parallelism_threads = 4
 # tf.compat.v1.keras.backend.set_session(tf.compat.v1.Session(config=config))
 config.gpu_options.allow_growth = True
 session = InteractiveSession(config=config)
