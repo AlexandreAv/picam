@@ -4,43 +4,39 @@ import numpy as np
 import cv2
 from time import time
 from detectors.SSDDetectors import SSDDetectors
+from detectors.BGSDetector import BGSDetector
 from depencies.VideoCapture import VideoCapture
 import pdb
 
 
-# TODO optimiser tflite
-
-def mean(x):
-	somme = 0
-
-	for n in x:
-		somme += n
-
-	return round(somme / len(x))
-
-
 def main(num_cam, path_to_model, path_label, input_size, output_size, display, time_of_cap):
-	detector = SSDDetectors(path_to_model, path_label)
+	motion_detector = BGSDetector()
+	object_detector = SSDDetectors(path_to_model, path_label)
 	video = cv2.VideoWriter("picam/video.mkv", cv2.VideoWriter_fourcc(*'MJPG'), 25, output_size)
 
-	with VideoCapture(num_cam, time_of_cap, display) as cap:
+	with VideoCapture(num_cam, time_of_cap, display, input_size) as cap:
 		if cap.is_opened():
 			while True:
 				ret, frame = cap.read()
 
 				# Our operations the frame come here
+				motion_detector.run_detection(frame)
 				frame = cv2.resize(frame, input_size)
 
+				if motion_detector.get_motion():
 
-				if is_there_motion:
 					frame = tf.convert_to_tensor(np.expand_dims(frame, axis=0), dtype=tf.uint8)
-					output_frame = detector.run_detection(frame)[0]
+					output_frame = object_detector.run_detection(frame)[0]
+					output_frame = cv2.putText(output_frame, cap.get_fps(), (15, 25), cv2.FONT_HERSHEY_SIMPLEX, 1,
+											   (0, 255, 0))
+
+				else:
+					output_frame = cv2.putText(frame, cap.get_fps(), (15, 25), cv2.FONT_HERSHEY_SIMPLEX, 1,
+											   (0, 255, 0))
 
 				output_frame = cv2.resize(output_frame, output_size)
-				output_frame = cv2.putText(output_frame, cap.get_fps(), (15, 25), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0))
 				video.write(output_frame)
 				# pdb.set_trace()
-
 
 				# Display the resulting frame
 				if display:
