@@ -3,5 +3,5 @@ path_model=picam/models/ssd_resnet50_v1_fpn_shared_box_predictor_640x640_coco14_
 label_path=picam/label/label.txt
 inputs_size=640
 outputs_size=640
-display=False
+display=True
 default-time=30   # en seconde

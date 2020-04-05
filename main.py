@@ -24,15 +24,12 @@ def main(num_cam, path_to_model, path_label, input_size, output_size, display, t
 				frame = cv2.resize(frame, input_size)
 
 				if motion_detector.get_motion():
-
 					frame = tf.convert_to_tensor(np.expand_dims(frame, axis=0), dtype=tf.uint8)
 					output_frame = object_detector.run_detection(frame)[0]
-					output_frame = cv2.putText(output_frame, cap.get_fps(), (15, 25), cv2.FONT_HERSHEY_SIMPLEX, 1,
-											   (0, 255, 0))
+					output_frame = cv2.putText(output_frame, str(cap.get_fps()), (15, 25), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0))
 
 				else:
-					output_frame = cv2.putText(frame, cap.get_fps(), (15, 25), cv2.FONT_HERSHEY_SIMPLEX, 1,
-											   (0, 255, 0))
+					output_frame = cv2.putText(frame, str(cap.get_fps()), (15, 25), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0))
 
 				output_frame = cv2.resize(output_frame, output_size)
 				video.write(output_frame)

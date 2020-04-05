@@ -3,8 +3,6 @@ from math import ceil
 import cv2
 import pdb
 
-
-
 from tensorflow.compat.v1 import ConfigProto
 from tensorflow.compat.v1 import InteractiveSession
 
@@ -14,6 +12,7 @@ config.intra_op_parallelism_threads = 4
 # tf.compat.v1.keras.backend.set_session(tf.compat.v1.Session(config=config))
 config.gpu_options.allow_growth = True
 session = InteractiveSession(config=config)
+
 
 class SSDDetectors:
 	"""
@@ -35,12 +34,13 @@ class SSDDetectors:
 		data = []
 		with open(path_label) as file:
 			for line in file.readlines():
-				data.append(line.replace("\n", "").split("\t")) # on supprime la première ligne qui est une légende et non des valeurs utiles
+				data.append(line.replace("\n", "").split(
+					"\t"))  # on supprime la première ligne qui est une légende et non des valeurs utiles
 
 		del data[0]
 		return data  # on retourne les valeurs du txt
 
-	def get_id_category(self, id):  #  on récupère la catégorie d'un objet grâce à l'identifiant de celui-ci
+	def get_id_category(self, id):  # on récupère la catégorie d'un objet grâce à l'identifiant de celui-ci
 		for element in self.list_label:
 			# pdb.set_trace()
 			if int(element[0]) == id:
@@ -50,6 +50,13 @@ class SSDDetectors:
 		return ""
 
 	def run_model_and_clean_output(self, batch_img):
+		"""
+		Fonction chargée de faire passer des images dans le modèle tout application des modification pour rendre
+		la sortie exploitable
+
+		:param batch_img: Les images à passer dans le modèle
+		:return: Résultat des prédictions du modèle
+		"""
 		predictions = self.model(batch_img)
 
 		num_detections = predictions.pop('num_detections').numpy().astype(dtype='int')
@@ -60,6 +67,14 @@ class SSDDetectors:
 		return predictions
 
 	def drawn_bounding_boxes(self, batch_img, batch_preds, color=(0, 255, 0)):
+		"""
+		Fonction chargée de créer les boudings boxe avec les prédictions du modèle
+
+		:param batch_img: Image où les boudings boxes seront crées
+		:param batch_preds: Prédiction du modèle
+		:param color: Couleur des boudings boxes
+		:return: Images avec les boudings boxes
+		"""
 		batch_img = batch_img.numpy()
 
 		for i_1 in range(len(batch_img)):
@@ -72,17 +87,27 @@ class SSDDetectors:
 
 			for i_2 in range(len(score)):  # ymin, xmin, ymax, xmax = box
 				# pdb.set_trace()
-				coord_min = (int(bbox[i_2][3] * img_w), int(bbox[i_2][2] * img_h))
-				coord_max = (int(bbox[i_2][1] * img_w), int(bbox[i_2][0] * img_h))
-				org = (coord_max[0] + 10, coord_max[1] + 20)
-				batch_img[i_1] = cv2.rectangle(img, coord_max, coord_min, color, 2)
-				text = "{}% {}".format(ceil(score[i_2] * 100), self.get_id_category(int(class_id[i_2])))
-				batch_img[i_1] = cv2.putText(img, text, org, cv2.FONT_HERSHEY_SIMPLEX, 0.5,
-											 color)  # TODO présenter correctement les params
+				try:
+					coord_min = (int(bbox[i_2][3] * img_w), int(bbox[i_2][2] * img_h))
+					coord_max = (int(bbox[i_2][1] * img_w), int(bbox[i_2][0] * img_h))
+					org = (coord_max[0] + 10, coord_max[1] + 20)
+					batch_img[i_1] = cv2.rectangle(img, coord_max, coord_min, color, 2)
+					text = "{}% {}".format(ceil(score[i_2] * 100), self.get_id_category(int(class_id[i_2])))
+					batch_img[i_1] = cv2.putText(img, text, org, cv2.FONT_HERSHEY_SIMPLEX, 0.5, color)
+
+				except IndexError:
+					print('Une erreur a eu lieu')
 
 		return batch_img
 
 	def run_detection(self, batch_img):
+		"""
+		Fonction charger de passer les images dans le modèle, puis d'écrire les boudings boxes issues des prédictions
+		du modèle dans les images
+
+		:param batch_img: Images à passer dans le modèle
+		:return: Images avec les boudings boxes
+		"""
 		prediction = self.run_model_and_clean_output(batch_img)
 		len_results = len(prediction)
 
