@@ -66,12 +66,12 @@ class SSDDetectors:
 
 		return predictions
 
-	def drawn_bounding_boxes(self, batch_img, batch_preds, color=(0, 255, 0)):
+	def drawn_bounding_boxes(self, batch_img, predictions, color=(0, 255, 0)):
 		"""
 		Fonction chargée de créer les boudings boxe avec les prédictions du modèle
 
 		:param batch_img: Image où les boudings boxes seront crées
-		:param batch_preds: Prédiction du modèle
+		:param predictions: Prédiction du modèle
 		:param color: Couleur des boudings boxes
 		:return: Images avec les boudings boxes
 		"""
@@ -80,23 +80,18 @@ class SSDDetectors:
 		for i_1 in range(len(batch_img)):
 			img = batch_img[i_1]
 			img_w, img_h, _ = img.shape
-			predictions = batch_preds[i_1]
-			score = predictions[1]
-			class_id = predictions[2]
-			bbox = predictions[0]
+			predictions = predictions[i_1]
+			class_id = predictions['detection_classes']
+			score = predictions['detection_scores']
+			bbox = predictions['detection_boxes']
 
 			for i_2 in range(len(score)):  # ymin, xmin, ymax, xmax = box
-				# pdb.set_trace()
-				try:
-					coord_min = (int(bbox[i_2][3] * img_w), int(bbox[i_2][2] * img_h))
-					coord_max = (int(bbox[i_2][1] * img_w), int(bbox[i_2][0] * img_h))
-					org = (coord_max[0] + 10, coord_max[1] + 20)
-					batch_img[i_1] = cv2.rectangle(img, coord_max, coord_min, color, 2)
-					text = "{}% {}".format(ceil(score[i_2] * 100), self.get_id_category(int(class_id[i_2])))
-					batch_img[i_1] = cv2.putText(img, text, org, cv2.FONT_HERSHEY_SIMPLEX, 0.5, color)
-
-				except IndexError:
-					print('Une erreur a eu lieu')
+				coord_min = (int(bbox[i_2][3] * img_w), int(bbox[i_2][2] * img_h))
+				coord_max = (int(bbox[i_2][1] * img_w), int(bbox[i_2][0] * img_h))
+				org = (coord_max[0] + 10, coord_max[1] + 20)
+				batch_img[i_1] = cv2.rectangle(img, coord_max, coord_min, color, 2)
+				text = "{}% {}".format(ceil(score[i_2] * 100), self.get_id_category(int(class_id[i_2])))
+				batch_img[i_1] = cv2.putText(img, text, org, cv2.FONT_HERSHEY_SIMPLEX, 0.5, color)
 
 		return batch_img
 
@@ -108,9 +103,6 @@ class SSDDetectors:
 		:param batch_img: Images à passer dans le modèle
 		:return: Images avec les boudings boxes
 		"""
-		prediction = self.run_model_and_clean_output(batch_img)
-		len_results = len(prediction)
+		predictions = self.run_model_and_clean_output(batch_img)
 
-		batch_preds = [list(prediction[i].values()) for i in range(len_results)]
-
-		return self.drawn_bounding_boxes(batch_img, batch_preds)
+		return self.drawn_bounding_boxes(batch_img, predictions)
