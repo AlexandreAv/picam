@@ -53,10 +53,14 @@ class VideoCapture:
 		for fps in self.tab_fps:
 			somme += fps
 
+		if len(self.tab_fps) == 0:
+			return -1
+
 		return round(somme / len(self.tab_fps))
 
 	def __enter__(self): # Initialise la capture à l'entré du context
 		self.cap = cv2.VideoCapture(self.num_cam)
+		print('La caméra a été ouverte')
 		if not self.size:
 			self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.size[0])
 			self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.size[1])
