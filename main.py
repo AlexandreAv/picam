@@ -6,13 +6,14 @@ from time import time
 from detectors.SSDDetectors import SSDDetectors
 from detectors.BGSDetector import BGSDetector
 from depencies.VideoCapture import VideoCapture
+from depencies.Events import Events
 import pdb
 
 
 def main(num_cam, path_to_model, path_label, input_size, output_size, display, time_of_cap):
 	motion_detector = BGSDetector()
 	object_detector = SSDDetectors(path_to_model, path_label)
-	video = cv2.VideoWriter("picam/video.mkv", cv2.VideoWriter_fourcc(*'MJPG'), 25, output_size)
+	preds_management = Events(3, 0.6, 0.7, None, None)
 
 	with VideoCapture(num_cam, time_of_cap, display, input_size) as cap:
 		if cap.is_opened():
@@ -25,14 +26,16 @@ def main(num_cam, path_to_model, path_label, input_size, output_size, display, t
 
 				if motion_detector.get_motion():
 					frame = tf.convert_to_tensor(np.expand_dims(frame, axis=0), dtype=tf.uint8)
-					output_frame = object_detector.run_detection(frame)[0]
+					batch_preds = object_detector.run_model_and_clean_output(frame)
+					batch_preds = preds_management.false_positive_check(batch_preds)
+					output_frame = object_detector.drawn_bounding_boxes(frame, batch_preds)
 					output_frame = cv2.putText(output_frame, str(cap.get_fps()), (15, 25), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0))
+					output_frame = output_frame[0]
 
 				else:
 					output_frame = cv2.putText(frame, str(cap.get_fps()), (15, 25), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0))
 
 				output_frame = cv2.resize(output_frame, output_size)
-				video.write(output_frame)
 				# pdb.set_trace()
 
 				# Display the resulting frame
@@ -46,8 +49,6 @@ def main(num_cam, path_to_model, path_label, input_size, output_size, display, t
 		else:
 			print('La caméra na pas été ouverte')
 
-	video.set(cv2.VIDEOWRITER_PROP_FRAMEBYTES, cap.get_mean_fps())
-	video.release()
 
 
 if __name__ == '__main__':  # temps en seconde

@@ -1,2 +1,2 @@
 # command pour supprimer tous les conteneurs
-docker container rm $(docker container ls -aq)
+docker container rm -f $(docker container ls -aq)

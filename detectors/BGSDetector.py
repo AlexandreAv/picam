@@ -1,9 +1,9 @@
 import cv2
 import numpy as np
-from depencies.functions import pool_sum_greater_than
+from depencies.Functions import pool_sum_greater_than
 
 
-class BGSDetector:
+class BGSDetector:  # TODO utiliser BGSDetector sur le GPU
 	"""
 			Classe de détection charger d'utiliser les modèles BGS OpenCv.
 			Cette classe va permettre de rendre l'utilisation de BGS plus facile

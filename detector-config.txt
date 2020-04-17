@@ -1,7 +1,7 @@
 capture=0
-path_model=picam/models/ssd_resnet50_v1_fpn_shared_box_predictor_640x640_coco14_sync_2018_07_03
+path_model=picam/models/ssd_mobilenet_v1_ppn_shared_box_predictor_300x300_coco14_sync_2018_07_03
 label_path=picam/label/label.txt
-inputs_size=640
+inputs_size=300
 outputs_size=640
 display=True
 default-time=30   # en seconde
